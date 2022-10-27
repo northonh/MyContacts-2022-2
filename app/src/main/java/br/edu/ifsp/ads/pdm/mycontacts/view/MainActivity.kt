@@ -61,20 +61,14 @@ class MainActivity : AppCompatActivity() {
 
         registerForContextMenu(amb.contactsLv)
 
-        amb.contactsLv.onItemClickListener = object: AdapterView.OnItemClickListener {
-            override fun onItemClick(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
+        amb.contactsLv.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, _ ->
                 val contact = contactList[position]
                 val contactIntent = Intent(this@MainActivity, ContactActivity::class.java)
                 contactIntent.putExtra(EXTRA_CONTACT, contact)
                 contactIntent.putExtra(VIEW_CONTACT, true)
                 startActivity(contactIntent)
             }
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
