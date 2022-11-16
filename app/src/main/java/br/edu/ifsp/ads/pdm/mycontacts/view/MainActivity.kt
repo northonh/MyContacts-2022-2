@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import br.edu.ifsp.ads.pdm.mycontacts.R
 import br.edu.ifsp.ads.pdm.mycontacts.adapter.ContactAdapter
+import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactController
 import br.edu.ifsp.ads.pdm.mycontacts.databinding.ActivityMainBinding
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.EXTRA_CONTACT
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.VIEW_CONTACT
@@ -24,18 +25,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Data source
-    private val contactList: MutableList<Contact> = mutableListOf()
+    private val contactList: MutableList<Contact> by lazy {
+        contactController.getContacts()
+    }
 
     // Adapter
     private lateinit var contactAdapter: ContactAdapter
 
     private lateinit var carl: ActivityResultLauncher<Intent>
 
+    // Controller
+    private val contactController: ContactController by lazy {
+        ContactController(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(amb.root)
 
-        fillContactList()
         contactAdapter = ContactAdapter(this, contactList)
         amb.contactsLv.adapter = contactAdapter
 
@@ -50,10 +57,13 @@ class MainActivity : AppCompatActivity() {
                     if (position != -1) {
                         // Alterar na posição
                         contactList[position] = _contact
+                        contactController.editContact(_contact)
                     }
                     else {
+                        _contact.id = contactController.insertContact(_contact)
                         contactList.add(_contact)
                     }
+                    contactList.sortBy { it.name }
                     contactAdapter.notifyDataSetChanged()
                 }
             }
@@ -99,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId) {
             R.id.removeContactMi -> {
                 // Remove o contato
+                contactController.removeContact(contactList[position].id)
                 contactList.removeAt(position)
                 contactAdapter.notifyDataSetChanged()
                 true
@@ -113,20 +124,6 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             else -> { false }
-        }
-    }
-
-    private fun fillContactList() {
-        for (i in 1..10) {
-            contactList.add(
-                Contact(
-                    id = i,
-                    name = "Nome $i",
-                    address = "Endereço $i",
-                    phone = "Telefone $i",
-                    email = "Email $i",
-                )
-            )
         }
     }
 }
