@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import br.edu.ifsp.ads.pdm.mycontacts.R
-import br.edu.ifsp.ads.pdm.mycontacts.model.Contact
+import br.edu.ifsp.ads.pdm.mycontacts.model.entity.Contact
 
 class ContactAdapter(
     context: Context,

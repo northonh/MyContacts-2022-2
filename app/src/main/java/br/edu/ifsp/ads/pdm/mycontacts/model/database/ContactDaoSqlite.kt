@@ -1,4 +1,4 @@
-package br.edu.ifsp.ads.pdm.mycontacts.model
+package br.edu.ifsp.ads.pdm.mycontacts.model.database
 
 import android.content.ContentValues
 import android.content.Context
@@ -7,6 +7,8 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import br.edu.ifsp.ads.pdm.mycontacts.R
+import br.edu.ifsp.ads.pdm.mycontacts.model.entity.Contact
+import br.edu.ifsp.ads.pdm.mycontacts.model.dao.ContactDao
 import java.sql.SQLException
 
 class ContactDaoSqlite(context: Context) : ContactDao {

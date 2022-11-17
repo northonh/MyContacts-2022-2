@@ -14,10 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import br.edu.ifsp.ads.pdm.mycontacts.R
 import br.edu.ifsp.ads.pdm.mycontacts.adapter.ContactAdapter
 import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactController
+import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactRoomController
 import br.edu.ifsp.ads.pdm.mycontacts.databinding.ActivityMainBinding
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.EXTRA_CONTACT
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.VIEW_CONTACT
-import br.edu.ifsp.ads.pdm.mycontacts.model.Contact
+import br.edu.ifsp.ads.pdm.mycontacts.model.entity.Contact
 
 class MainActivity : AppCompatActivity() {
     private val amb: ActivityMainBinding by lazy {
@@ -25,9 +26,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Data source
-    private val contactList: MutableList<Contact> by lazy {
-        contactController.getContacts()
-    }
+    private val contactList: MutableList<Contact> = mutableListOf()
 
     // Adapter
     private lateinit var contactAdapter: ContactAdapter
@@ -35,8 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var carl: ActivityResultLauncher<Intent>
 
     // Controller
-    private val contactController: ContactController by lazy {
-        ContactController(this)
+    private val contactController: ContactRoomController by lazy {
+        ContactRoomController(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,18 +52,16 @@ class MainActivity : AppCompatActivity() {
                 val contact = result.data?.getParcelableExtra<Contact>(EXTRA_CONTACT)
 
                 contact?.let { _contact->
-                    val position = contactList.indexOfFirst { it.id == _contact.id }
-                    if (position != -1) {
-                        // Alterar na posição
-                        contactList[position] = _contact
-                        contactController.editContact(_contact)
+                    if (_contact.id != null) {
+                        val position = contactList.indexOfFirst { it.id == _contact.id }
+                        if (position != -1) {
+                            // Alterar na posição
+                            contactController.editContact(_contact)
+                        }
                     }
                     else {
-                        _contact.id = contactController.insertContact(_contact)
-                        contactList.add(_contact)
+                        contactController.insertContact(_contact)
                     }
-                    contactList.sortBy { it.name }
-                    contactAdapter.notifyDataSetChanged()
                 }
             }
         }
@@ -79,6 +76,9 @@ class MainActivity : AppCompatActivity() {
                 contactIntent.putExtra(VIEW_CONTACT, true)
                 startActivity(contactIntent)
             }
+
+        // Buscando contatos no banco
+        contactController.getContacts()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -106,17 +106,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val position = (item.menuInfo as AdapterContextMenuInfo).position
+        val contact = contactList[position]
         return when(item.itemId) {
             R.id.removeContactMi -> {
                 // Remove o contato
-                contactController.removeContact(contactList[position].id)
-                contactList.removeAt(position)
-                contactAdapter.notifyDataSetChanged()
+                contactController.removeContact(contact)
                 true
             }
             R.id.editContactMi -> {
                 // Chama a tela para editar o contato
-                val contact = contactList[position]
                 val contactIntent = Intent(this, ContactActivity::class.java)
                 contactIntent.putExtra(EXTRA_CONTACT, contact)
                 contactIntent.putExtra(VIEW_CONTACT, false)
@@ -125,5 +123,11 @@ class MainActivity : AppCompatActivity() {
             }
             else -> { false }
         }
+    }
+
+    fun updateContactList(_contactList: MutableList<Contact>) {
+        contactList.clear()
+        contactList.addAll(_contactList)
+        contactAdapter.notifyDataSetChanged()
     }
 }

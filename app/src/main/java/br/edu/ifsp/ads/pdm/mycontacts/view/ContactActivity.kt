@@ -8,8 +8,7 @@ import br.edu.ifsp.ads.pdm.mycontacts.databinding.ActivityContactBinding
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.EXTRA_CONTACT
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.INVALID_CONTACT_ID
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.VIEW_CONTACT
-import br.edu.ifsp.ads.pdm.mycontacts.model.Contact
-import kotlin.random.Random
+import br.edu.ifsp.ads.pdm.mycontacts.model.entity.Contact
 
 class ContactActivity : AppCompatActivity() {
     private val acb: ActivityContactBinding by lazy {
@@ -41,7 +40,7 @@ class ContactActivity : AppCompatActivity() {
 
         acb.saveBt.setOnClickListener {
             val contact = Contact(
-                id = receivedContact?.id?: INVALID_CONTACT_ID,
+                id = receivedContact?.id,
                 name = acb.nameEt.text.toString(),
                 address = acb.addressEt.text.toString(),
                 phone = acb.phoneEt.text.toString(),
