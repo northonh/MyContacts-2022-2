@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import br.edu.ifsp.ads.pdm.mycontacts.R
 import br.edu.ifsp.ads.pdm.mycontacts.adapter.ContactAdapter
 import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactController
+import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactFirebaseController
 import br.edu.ifsp.ads.pdm.mycontacts.controller.ContactRoomController
 import br.edu.ifsp.ads.pdm.mycontacts.databinding.ActivityMainBinding
 import br.edu.ifsp.ads.pdm.mycontacts.model.Constant.EXTRA_CONTACT
@@ -34,9 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var carl: ActivityResultLauncher<Intent>
 
     // Controller
-    private val contactController: ContactRoomController by lazy {
-        ContactRoomController(this)
-    }
+    private lateinit var contactController: ContactFirebaseController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,14 +53,15 @@ class MainActivity : AppCompatActivity() {
                 contact?.let { _contact->
                     if (_contact.id != null) {
                         val position = contactList.indexOfFirst { it.id == _contact.id }
-                        if (position != -1) {
-                            // Alterar na posição
-                            contactController.editContact(_contact)
-                        }
+                        contactController.editContact(_contact)
+                        contactList[position] = _contact
                     }
                     else {
                         contactController.insertContact(_contact)
+                        contactList.add(_contact)
                     }
+                    contactList.sortBy { it.name }
+                    contactAdapter.notifyDataSetChanged()
                 }
             }
         }
@@ -78,7 +78,14 @@ class MainActivity : AppCompatActivity() {
             }
 
         // Buscando contatos no banco
-        contactController.getContacts()
+        contactController = ContactFirebaseController(this)
+        Thread {
+            Thread.sleep(3000)
+            runOnUiThread {
+                contactController.getContacts()
+            }
+        }.start()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -110,7 +117,9 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId) {
             R.id.removeContactMi -> {
                 // Remove o contato
-                contactController.removeContact(contact)
+                contactController.removeContact(contact.id!!)
+                contactList.remove(contact)
+                contactAdapter.notifyDataSetChanged()
                 true
             }
             R.id.editContactMi -> {
@@ -128,6 +137,7 @@ class MainActivity : AppCompatActivity() {
     fun updateContactList(_contactList: MutableList<Contact>) {
         contactList.clear()
         contactList.addAll(_contactList)
+        contactList.sortBy { it.name }
         contactAdapter.notifyDataSetChanged()
     }
 }
